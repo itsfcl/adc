@@ -1,42 +1,34 @@
 import { splitmix32 } from "./Random";
-
-export const Fault = {
-  OK: 0,
-  NONFINITE: 1,
-  VALUE: 2,
-  HASH: 3,
-  COUNT: 4,
-  RANGE: 5,
-  DOMAIN: 6,
-  DUPLICATE: 7,
-} as const;
+import { Fault } from "./Constant";
 
 const Z_SEED = 0x177013ff;
 
-interface ProblemInterface {
-  readonly vars: number;
-  readonly sol: Int32Array;
-  val: number;
-  work: number;
-  hash: number;
-  readonly drift: number;
-  readonly fault: number;
-  readonly fatal: boolean;
-  init(): void;
-  domain(id: number): Int32Array;
-  evaluate(sol: Int32Array): number;
-  delta(id: number, v: number): number;
-  mutate(id: number, v: number): void;
-  load(src: Int32Array, value?: number): void;
-  verify(): number;
-  validate(s: Int32Array): number;
-  pool?: Int32Array;
-  group?: Int32Array;
-  valueClass?(v: number): number;
-  interacts?(id: number, j: number): number;
-  solveGroup?(g: number): boolean;
+export interface ProblemInterface {
+    readonly vars: number;
+    readonly sol: Int32Array;
+    val: number;
+    work: number;
+    hash: number;
+    readonly drift: number;
+    readonly fault: number;
+    readonly fatal: boolean;
+    init(): void;
+    domain(id: number): Int32Array;
+    evaluate(sol: Int32Array): number;
+    delta(id: number, v: number): number;
+    mutate(id: number, v: number): void;
+    load(src: Int32Array, value?: number): void;
+    verify(): number;
+    validate(s: Int32Array): number;
+    pool?: Int32Array;
+    group?: Int32Array;
+    valueClass?(v: number): number;
+    interacts?(id: number, j: number): number;
+    solveGroup?(g: number): boolean;
 }
 
+
+// todo : separate core problem interface, allows dynamically passing objective
 abstract class Problem implements ProblemInterface {
     readonly sol: Int32Array;
     val = 0;
@@ -218,6 +210,7 @@ abstract class Problem implements ProblemInterface {
         if (this.dev) this.verify();
     }
 
+    // drift check
     verify(): number {
         const n = this.vars;
         const S = this.stride;

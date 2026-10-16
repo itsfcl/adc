@@ -1,5 +1,6 @@
 import {ProblemInterface} from "./Problem";
 import { splitmix32 } from "./Random";
+import { Fault } from "./Constant";
 
 export interface Destroy {
     select(k: number, out: Int32Array): number;
@@ -136,8 +137,29 @@ export class Engine {
         this.deadline = t0 + o.budget - o.tail;
     }
 
-    // todo : validate seed, warm start, first iter
-    protected start(): void {}
+    // todo : first clean start
+    protected start(): void {
+        let bestS: Int32Array | null = null;
+        let bestV: number = -Infinity;
+        let v = -Infinity;
+        for (let seed of this.o.seeds) {
+            if (seed.length !== this.p.vars) continue;
+            if (this.p.validate(seed) !== Fault.OK) continue;
+            v = this.p.evaluate(seed);
+            if (Number.isFinite(v) && v > bestV) {
+                bestS = seed;
+                bestV = v;
+            }
+        }
+
+        if (bestS) {
+            this.p.load(bestS, bestV);
+            this.best.set(bestS);
+            this.bestVal = bestV;
+        } else {
+            // todo : floodfill
+        }
+    }
 
     // todo : iter
     protected run(): void {}
